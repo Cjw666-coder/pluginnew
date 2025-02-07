@@ -1,0 +1,156 @@
+<style>
+    body {
+      font-family: Inter, sans-serif;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 320px;
+    }
+    
+    .section {
+      margin-bottom: 20px;
+    }
+    
+    .frame-info {
+      word-break: break-all;
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .form-control[readonly] {
+      background-color: #f5f5f5;
+    }
+    .priority-high {
+      color: #d93026;
+    }
+    .priority-medium {
+      color: #f5a623;
+    }
+    .priority-low {
+      color: #4caf50;
+    }
+</style>
+
+<div class="container">
+    <div class="section">
+        <h3>画布URL：</h3>
+        <p id="canvas-url">加载中...</p>
+    </div>
+    <div class="section">
+        <h3>选中的 Frame 信息：</h3>
+        <div class="frame-info">
+            <p>名称：<span id="frame-name">未选择</span></p>
+            <p>类型：<span id="frame-type">未选择</span></p>
+            <p>链接：<span id="frame-url">未选择</span></p>
+        </div>
+    </div>
+    <form id="taskForm">
+        <div class="form-group">
+            <label class="form-label">项目名称</label>
+            <input type="text" id="projectName" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">任务类型</label>
+            <input type="text" id="taskType" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">优先级</label>
+            <input type="text" id="priority" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">任务详情</label>
+            <textarea id="taskDetail" class="form-control" rows="3" readonly></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">需求方向</label>
+            <input type="text" id="direction" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">开始设计日期</label>
+            <input type="text" id="startDate" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">结束设计日期</label>
+            <input type="text" id="endDate" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">设计耗时</label>
+            <input type="text" id="designTime" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Figma 链接</label>
+            <input type="text" id="figmaUrl" class="form-control" readonly>
+        </div>
+    </form>
+    <img 
+      src="${avatarUrl}" 
+      onerror="this.src='https://s3-alpha.figma.com/static/user_1.png'" 
+      alt="User avatar"
+    />
+</div>
+
+<script>
+    window.onmessage = (event) => {
+        const message = event.data.pluginMessage;
+        
+        if (message.type === 'update-url') {
+            document.getElementById('canvas-url').textContent = message.url;
+        }
+        
+        if (message.type === 'selection-change') {
+            document.getElementById('frame-name').textContent = message.nodeName;
+            document.getElementById('frame-type').textContent = message.nodeType;
+            document.getElementById('frame-url').textContent = message.url;
+            document.getElementById('figmaUrl').value = message.url;
+        }
+        
+        if (message.type === 'task-data') {
+            const data = message.data;
+            // 填充表单数据
+            document.getElementById('projectName').value = data.projectName || '';
+            document.getElementById('taskType').value = data.taskType || '';
+            document.getElementById('priority').value = data.priority || '';
+            document.getElementById('taskDetail').value = data.taskDetail || '';
+            document.getElementById('direction').value = data.direction || '';
+            document.getElementById('startDate').value = data.startDate || '';
+            document.getElementById('endDate').value = data.endDate || '';
+            document.getElementById('designTime').value = data.designTime || '';
+            
+            // 设置优先级样式
+            const priorityInput = document.getElementById('priority');
+            priorityInput.className = `form-control priority-${data.priority?.toLowerCase() || 'medium'}`;
+        }
+        
+        if (message.type === 'api-error') {
+            console.error('API Error:', message.error);
+            // 可以添加错误提示UI
+        }
+    };
+</script>
